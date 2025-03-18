@@ -74,7 +74,6 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
 
-
     @Override
     public void clearAllEpics() {
         epics.clear();

@@ -1,4 +1,5 @@
 package ru.yandex.practicum.main.model;
+
 import java.util.Objects;
 
 public class SubTask extends Task {
@@ -25,7 +26,7 @@ public class SubTask extends Task {
                 ", статус=" + getStatus() +
                 '}';
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

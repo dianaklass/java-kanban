@@ -1,4 +1,5 @@
 package ru.yandex.practicum.main.model;
+
 import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class Epic extends Task {
                 ", статус=" + getStatus() +
                 '}';
     }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
