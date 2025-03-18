@@ -1,8 +1,10 @@
 package managers;
 
 import tasks.Epic;
-
+import tasks.Task;
+import tasks.SubTask;
 import java.util.*;
+import tasks.Status;
 
 public class InMemoryTaskManager implements TaskManager {
     private final Map<Integer, Task> tasks = new HashMap<>();
