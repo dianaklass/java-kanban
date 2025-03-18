@@ -1,6 +1,4 @@
-package main.java.ru.yandex.practicum.main.service;
-
-import main.java.ru.yandex.practicum.main.model.Task;
+package managers;
 
 import java.util.*;
 

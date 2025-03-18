@@ -1,12 +1,12 @@
-import main.java.ru.yandex.practicum.main.model.Epic;
-import main.java.ru.yandex.practicum.main.model.Status;
-import main.java.ru.yandex.practicum.main.model.SubTask;
-import main.java.ru.yandex.practicum.main.model.Task;
-import main.java.ru.yandex.practicum.main.service.HistoryManager;
-import main.java.ru.yandex.practicum.main.service.Manager;
-import main.java.ru.yandex.practicum.main.service.TaskManager;
+import managers.HistoryManager;
+import managers.Manager;
+import managers.TaskManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tasks.Epic;
+import tasks.Status;
+import tasks.SubTask;
+import tasks.Task;
 
 import java.util.List;
 

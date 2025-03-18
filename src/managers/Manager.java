@@ -1,4 +1,4 @@
-package main.java.ru.yandex.practicum.main.service;
+package managers;
 
 public class Manager {
 

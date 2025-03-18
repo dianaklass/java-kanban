@@ -1,4 +1,4 @@
-package main.java.ru.yandex.practicum.main.model;
+package tasks;
 
 import java.util.Objects;
 
