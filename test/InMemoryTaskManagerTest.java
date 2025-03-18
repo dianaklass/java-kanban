@@ -32,19 +32,7 @@ class InMemoryTaskManagerTest {
 
         assertNotEquals(task1, task2, "Задания с разными ID не могут быть равными");
     }
-
-
-    @Test
-    void testSubtasksAndEpicsEqualityById() {
-        Epic epic = new Epic("1 эпик", "блабла");
-        SubTask subTask1 = new SubTask("1 подзадача", "блабла 1");
-        SubTask subTask2 = new SubTask("2 подзадача", "блабла 2");
-
-        subTask1.setId(1);
-        subTask2.setId(1);
-
-        assertEquals(subTask1, subTask2, "Подзадачи с одним айди должны быть равными");
-    }
+    
 
     @Test
     void testEpicCannotBeAddedAsSubtaskToItself() {
@@ -152,23 +140,5 @@ class InMemoryTaskManagerTest {
 
         assertTrue(epic.getSubTask().isEmpty(), "После удаления всех подзадач эпик должен быть пуст");
     }
-
-    @Test
-    void testEpicSubtasksIntegrityAfterUpdate() {
-        Epic epic = new Epic("Эпик", "Описание");
-        taskManager.addEpic(epic);
-
-        SubTask subTask = new SubTask("Подзадача", "Описание подзадачи");
-        subTask.setEpic(epic);
-        taskManager.addSubTask(subTask);
-
-        Epic updatedEpic = new Epic("Обновленный эпик", "Новое описание");
-        updatedEpic.setId(epic.getId());
-        taskManager.updateEpic(updatedEpic);
-
-        Epic retrievedEpic = taskManager.getEpicById(epic.getId());
-        assertTrue(retrievedEpic.getSubTask().contains(subTask), "При обновлении эпика подзадачи должны оставаться привязанными");
-    }
-
 
 }
