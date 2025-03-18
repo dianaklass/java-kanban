@@ -48,11 +48,15 @@ public class Task {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) return true;  // если объекты одинаковые (ссылаются на один и тот же объект)
+        if (o == null || getClass() != o.getClass()) return false;  // проверка на null и тип объекта
         Task task = (Task) o;
-        return id == task.id && Objects.equals(name, task.name) && Objects.equals(description, task.description) && Objects.equals(status, task.status);
+        return id == task.id &&  // сравниваем по id
+                Objects.equals(name, task.name) &&  // сравниваем по имени
+                Objects.equals(description, task.description) &&  // сравниваем по описанию
+                status == task.status;  // сравниваем по статусу
     }
+
 
     @Override
     public int hashCode() {

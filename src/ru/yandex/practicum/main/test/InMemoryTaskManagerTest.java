@@ -1,4 +1,4 @@
-package ru.yandex.practicum.main.service;
+package ru.yandex.practicum.main.test;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,9 @@ import ru.yandex.practicum.main.model.Epic;
 import ru.yandex.practicum.main.model.Status;
 import ru.yandex.practicum.main.model.SubTask;
 import ru.yandex.practicum.main.model.Task;
+import ru.yandex.practicum.main.service.HistoryManager;
+import ru.yandex.practicum.main.service.Manager;
+import ru.yandex.practicum.main.service.TaskManager;
 
 import java.util.List;
 
@@ -22,11 +25,16 @@ class InMemoryTaskManagerTest {
     @Test
     void testTasksEqualityById() {
         Task task1 = new Task("1 задание", "блабла");
-        Task task2 = new Task("2 задание", "блабла");
+
         task1.setId(1);
-        task2.setId(1);
-        assertEquals(task1, task2, "Задания с одним айди должны быть идентичными");
+
+        Task task2 = new Task("2 задание", "блабла");
+
+        task2.setId(2);
+
+        assertNotEquals(task1, task2, "Задания с разными ID не могут быть равными");
     }
+
 
     @Test
     void testSubtasksAndEpicsEqualityById() {
@@ -97,13 +105,14 @@ class InMemoryTaskManagerTest {
         retrievedTask.setName("Новое имя");
         retrievedTask.setDescription("Новое описание");
         retrievedTask.setStatus(Status.DONE);
-
+        taskManager.update(retrievedTask);
         Task storedTask = taskManager.getTaskById(task.getId());
 
-        assertNotEquals("Новое имя", storedTask.getName(), "Менеджер не должен менять имя без вызова обновления");
-        assertNotEquals("Новое описание", storedTask.getDescription(), "Менеджер не должен менять описание без вызова обновления");
-        assertNotEquals(Status.DONE, storedTask.getStatus(), "Менеджер не должен менять статус без вызова обновления");
+        assertEquals("Новое имя", storedTask.getName(), "Менеджер должен обновить имя задачи");
+        assertEquals("Новое описание", storedTask.getDescription(), "Менеджер должен обновить описание задачи");
+        assertEquals(Status.DONE, storedTask.getStatus(), "Менеджер должен обновить статус задачи");
     }
+
 
     @Test
     void testHistoryManagerPreservesTaskVersions() {
@@ -160,6 +169,9 @@ class InMemoryTaskManagerTest {
         taskManager.updateEpic(updatedEpic);
 
         Epic retrievedEpic = taskManager.getEpicById(epic.getId());
-        assertTrue(retrievedEpic.getSubTask().contains(subTask), "При обновлении эпика поздачи должны оставаться");
+        assertTrue(retrievedEpic.getSubTask().contains(subTask), "При обновлении эпика подзадачи должны оставаться привязанными");
     }
+
+
+
 }

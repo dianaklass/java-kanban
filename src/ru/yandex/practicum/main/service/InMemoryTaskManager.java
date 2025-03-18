@@ -47,7 +47,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    // Методы для работы с эпиками
     @Override
     public void addEpic(Epic epic) {
         epic.setId(idCounter++);
@@ -64,19 +63,23 @@ public class InMemoryTaskManager implements TaskManager {
         return epics.get(id);
     }
 
-    @Override
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            epics.put(epic.getId(), epic);
+            Epic existingEpic = epics.get(epic.getId());
+            existingEpic.setName(epic.getName());
+            existingEpic.setDescription(epic.getDescription());
+        } else {
+            System.out.println("Эпик с таким ID не найден");
         }
     }
+
+
 
     @Override
     public void clearAllEpics() {
         epics.clear();
     }
 
-    // Методы для работы с подзадачами
     @Override
     public void addSubTask(SubTask subTask) {
         subTask.setId(idCounter++);
@@ -116,13 +119,10 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-
     @Override
     public List<Task> getHistory() {
-
         return new ArrayList<>(tasks.values());
     }
-
 
     @Override
     public void updateEpicStatus(Epic epic) {
@@ -134,14 +134,12 @@ public class InMemoryTaskManager implements TaskManager {
             }
         }
 
-
         if (allDone) {
             epic.setStatus(Status.DONE);
         } else {
             epic.setStatus(Status.IN_PROGRESS);
         }
     }
-
 
     @Override
     public void printError(String message) {
