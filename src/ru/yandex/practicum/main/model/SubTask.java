@@ -25,6 +25,7 @@ public class SubTask extends Task {
                 ", статус=" + getStatus() +
                 '}';
     }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
