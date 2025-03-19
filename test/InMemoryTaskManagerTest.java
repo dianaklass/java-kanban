@@ -32,7 +32,7 @@ class InMemoryTaskManagerTest {
 
         assertNotEquals(task1, task2, "Задания с разными ID не могут быть равными");
     }
-    
+
 
     @Test
     void testEpicCannotBeAddedAsSubtaskToItself() {
