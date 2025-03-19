@@ -17,20 +17,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     public void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            // Записываем заголовок
             writer.write("id,type,name,status,description,epic");
             writer.newLine();
 
             for (Task task : getAllTasks()) {
-                writer.write(taskToString(task));
+                writer.write(task.toString());
                 writer.newLine();
             }
             for (Epic epic : getAllEpics()) {
-                writer.write(epicToString(epic));
+                writer.write(epic.toString());
                 writer.newLine();
             }
             for (SubTask subTask : getAllSubTasks()) {
-                writer.write(subTaskToString(subTask));
+                writer.write(subTask.toString());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -38,23 +37,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         }
     }
 
-    private String taskToString(Task task) {
-        return "Task," + task.getId() + "," + task.getName() + "," + task.getStatus() + "," + task.getDescription() + ",";
-    }
-
-    private String epicToString(Epic epic) {
-        return "Epic," + epic.getId() + "," + epic.getName() + "," + epic.getStatus() + "," + epic.getDescription() + ",";
-    }
-
-    private String subTaskToString(SubTask subTask) {
-        return "SubTask," + subTask.getId() + "," + subTask.getName() + "," + subTask.getStatus() + "," + subTask.getDescription() + "," + subTask.getEpic().getId();
-    }
-
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            reader.readLine();
+            reader.readLine(); // Пропускаем заголовок
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data[0].equals("Task")) {
@@ -63,11 +50,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                     try {
                         task.setStatus(Status.valueOf(data[4]));
                     } catch (IllegalArgumentException e) {
-                        System.out.println(" Статус не найден для задачи с ID: " + data[1]);
+                        System.out.println("Статус не найден для задачи с ID: " + data[1]);
                         task.setStatus(Status.NEW);
                     }
                     manager.addTask(task);
-                } else if (data[0].equals("Эпик")) {
+                } else if (data[0].equals("Epic")) {
                     Epic epic = new Epic(data[2], data[3]);
                     epic.setId(Integer.parseInt(data[1]));
                     try {
@@ -77,7 +64,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                         epic.setStatus(Status.NEW);
                     }
                     manager.addEpic(epic);
-                } else if (data[0].equals("Сабтаск")) {
+                } else if (data[0].equals("SubTask")) {
                     SubTask subTask = new SubTask(data[2], data[3]);
                     subTask.setId(Integer.parseInt(data[1]));
                     try {
@@ -94,8 +81,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         }
         return manager;
     }
-
-
 
     @Override
     public void addTask(Task task) {
