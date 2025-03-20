@@ -1,5 +1,7 @@
 package tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -7,13 +9,19 @@ public class Task {
     private String description;
     private int id;
     private Status status;
+    private Duration duration;
+    private LocalDateTime startTime;
 
-    public Task(String name, String description) {
+    // Конструктор
+    public Task(String name, String description, Duration duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
+    // Геттеры и сеттеры
     public void setName(String name) {
         this.name = name;
     }
@@ -46,6 +54,30 @@ public class Task {
         this.status = status;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getDurationInMinutes() {
+        return duration.toMinutes();
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plus(duration);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,7 +88,6 @@ public class Task {
                 Objects.equals(description, task.description) &&
                 status == task.status;
     }
-
 
     @Override
     public int hashCode() {
@@ -72,5 +103,12 @@ public class Task {
                 ", статус=" + status +
                 '}';
     }
+
+    // Для записи задачи в CSV
+    public String toCsvString() {
+        return String.format("Task,%d,%s,%s,%s,%d,%s",
+                id, name, description, status, duration.toMinutes(), startTime != null ? startTime.toString() : "");
+    }
+
 }
 

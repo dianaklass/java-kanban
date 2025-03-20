@@ -1,4 +1,5 @@
 package managers;
+
 import tasks.Epic;
 import tasks.Status;
 import tasks.SubTask;
@@ -45,12 +46,12 @@ public interface TaskManager {
 
     void updateSubTaskStatus(SubTask subTask, Status newStatus);
 
-
     List<Task> getHistory();
-
 
     void updateEpicStatus(Epic epic);
 
+    // Метод для получения приоритетных задач
+    List<Task> getPrioritizedTasks();
 
     default void printError(String message) {
         System.out.println("Ошибка: " + message);
