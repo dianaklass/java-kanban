@@ -1,6 +1,5 @@
 package managers;
 import java.io.File;
-
 public class Manager {
 
 

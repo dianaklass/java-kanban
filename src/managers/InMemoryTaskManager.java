@@ -5,7 +5,6 @@ import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
 
-import java.time.Duration;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
@@ -21,7 +20,6 @@ public class InMemoryTaskManager implements TaskManager {
         this.historyManager = Manager.getDefaultHistory();
     }
 
-    // Методы для работы с задачами
     @Override
     public void addTask(Task task) {
         if (task == null) {
@@ -30,7 +28,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         task.setId(idCounter++);
         tasks.put(task.getId(), task);
-        prioritizedTasks.add(task);  // Добавляем в приоритетный список
+        prioritizedTasks.add(task);
     }
 
     @Override
@@ -69,8 +67,8 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
         tasks.put(newTask.getId(), newTask);
-        prioritizedTasks.remove(newTask); // Убираем старую задачу из списка
-        prioritizedTasks.add(newTask);    // Добавляем обновленную задачу
+        prioritizedTasks.remove(newTask);
+        prioritizedTasks.add(newTask);
     }
 
     // Методы для работы с эпиками
@@ -123,7 +121,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         subTask.setId(idCounter++);
         subTasks.put(subTask.getId(), subTask);
-        prioritizedTasks.add(subTask); // Добавляем в приоритетный список
+        prioritizedTasks.add(subTask);
         if (subTask.getEpic() != null) {
             updateEpicTimeFields(subTask.getEpic());
         }
@@ -199,9 +197,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void updateEpicTimeFields(Epic epic) {
-        epic.updateEpicData(); // Обновляем время и продолжительность эпика
+        epic.updateEpicData();
         prioritizedTasks.remove(epic);
-        prioritizedTasks.add(epic); // Перезаписываем в приоритетный список
+        prioritizedTasks.add(epic);
     }
 
     public void printError(String message) {

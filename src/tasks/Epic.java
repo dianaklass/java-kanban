@@ -1,5 +1,4 @@
 package tasks;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.Objects;
 public class Epic extends Task {
     private List<SubTask> subTasks;
 
-    // Поля для расчётных значений
     private Duration duration;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -29,7 +27,6 @@ public class Epic extends Task {
                 getId(), getName(), getDescription(), getStatus());
     }
 
-    // Метод для добавления подзадачи
     public void addSubTask(SubTask subTask) {
         if (subTask == null) {
             System.out.println("Подзадача пуста");
@@ -37,18 +34,16 @@ public class Epic extends Task {
         }
         subTask.setEpic(this);
         subTasks.add(subTask);
-        updateEpicData(); // Обновляем данные эпика после добавления подзадачи
+        updateEpicData();
     }
 
-    // Метод для удаления подзадачи
     public void removeSubTask(SubTask subTask) {
         if (subTask != null) {
             subTasks.remove(subTask);
-            updateEpicData(); // Обновляем данные эпика после удаления подзадачи
+            updateEpicData();
         }
     }
 
-    // Метод для получения списка подзадач
     public List<SubTask> getSubTasks() {
         return subTasks;
     }
@@ -58,11 +53,9 @@ public class Epic extends Task {
         return endTime;
     }
 
-    // Метод для вычисления времени завершения эпика
     private LocalDateTime calculateEndTime() {
         LocalDateTime latestEndTime = startTime;
 
-        // Перебираем все подзадачи и находим самую позднюю
         for (SubTask subTask : subTasks) {
             LocalDateTime subTaskEndTime = subTask.getStartTime().plus(subTask.getDuration());
             if (subTaskEndTime.isAfter(latestEndTime)) {
@@ -73,7 +66,6 @@ public class Epic extends Task {
         return latestEndTime;
     }
 
-    // Метод для обновления данных эпика
     public void updateEpicData() {
         Duration totalDuration = Duration.ZERO;
         LocalDateTime earliestStartTime = LocalDateTime.MAX;

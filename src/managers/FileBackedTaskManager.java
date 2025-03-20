@@ -9,7 +9,6 @@ import java.io.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final File file;
@@ -20,7 +19,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         loadFromFile();
     }
 
-    // 🔹 Загружаем данные из файла
     private void loadFromFile() {
         if (!file.exists()) return;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -41,7 +39,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         }
     }
 
-    // 🔹 Сохраняем задачи в файл
     private void saveToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("type,id,name,description,status,duration,startTime,epicId\n");
@@ -53,7 +50,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         }
     }
 
-    // 🔹 Преобразование задачи в строку CSV
     private String toString(Task task) {
         String type = task instanceof Epic ? "Epic" : (task instanceof SubTask ? "SubTask" : "Task");
         String epicId = task instanceof SubTask ? String.valueOf(((SubTask) task).getEpicId()) : "";
@@ -94,17 +90,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 return task;
         }
     }
+
     private Epic findEpicById(int epicId) {
-        // Возвращаем эпик по ID из хранилища
         for (Epic epic : getAllEpics()) {
             if (epic.getId() == epicId) {
                 return epic;
             }
         }
-        return null; // Или выбрасывать исключение, если эпик не найден
+        return null;
     }
 
-    // 🔹 Методы для работы с задачами
     @Override
     public void addTask(Task task) {
         super.addTask(task);
@@ -147,7 +142,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         saveToFile();
     }
 
-    // 🔹 Методы для работы с эпиками
     @Override
     public void addEpic(Epic epic) {
         super.addEpic(epic);
@@ -176,7 +170,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         saveToFile();
     }
 
-    // 🔹 Методы для работы с подзадачами
     @Override
     public void addSubTask(SubTask subTask) {
         super.addSubTask(subTask);
@@ -219,13 +212,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         saveToFile();
     }
 
-    // 🔹 История
     @Override
     public List<Task> getHistory() {
         return super.getHistory();
     }
 
-    // 🔹 Обновление статуса эпика
     @Override
     public void updateEpicStatus(Epic epic) {
         super.updateEpicStatus(epic);
@@ -237,26 +228,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     public boolean checkTaskOverlap(Task task1, Task task2) {
-        // Check if the tasks overlap
         if (task1.getStartTime().isBefore(task2.getEndTime()) && task1.getEndTime().isAfter(task2.getStartTime())) {
             return true;
         }
         return false;
     }
 
-    // 🔹 Метод для получения всех задач, отсортированных по времени начала
     @Override
     public List<Task> getPrioritizedTasks() {
         return new ArrayList<>(prioritizedTasks);
     }
 
-    // 🔹 Загрузка менеджера из файла
     public static FileBackedTaskManager loadFromFile(File file) {
         return new FileBackedTaskManager(file);
     }
 
-    // 🔹 Добавляем метод для получения подзадачи по ID
     public SubTask getSubTaskById(int id) {
-        return (SubTask) super.getTaskById(id); // Используем родительский метод для поиска задачи по ID
+        return (SubTask) super.getTaskById(id);
     }
 }

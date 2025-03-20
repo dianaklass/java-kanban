@@ -8,12 +8,11 @@ public class SubTask extends Task {
     private Epic epic;
     private int epicId;
 
-    // Конструктор для создания подзадачи с эпиком
     public SubTask(String name, String description, Duration duration, LocalDateTime startTime, Epic epic, Status status) {
-        super(name, description, duration, startTime); // Вызов конструктора родительского класса Task
+        super(name, description, duration, startTime);
         this.epic = epic;
-        this.epicId = epic != null ? epic.getId() : -1; // Устанавливаем ID эпика, если эпик не null
-        this.setStatus(status); // Устанавливаем статус подзадачи
+        this.epicId = epic != null ? epic.getId() : -1;
+        this.setStatus(status);
     }
 
     // Геттер и сеттер для epicId
