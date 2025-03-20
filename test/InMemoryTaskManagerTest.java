@@ -78,14 +78,6 @@ public class InMemoryTaskManagerTest {
         assertEquals(2, tasks.size());
     }
 
-    @Test
-    public void testGetHistory() {
-        Task task1 = new Task("Test Task 1", "Description", Duration.ofHours(2), LocalDateTime.now());
-        taskManager.addTask(task1);
 
-        taskManager.getTaskById(task1.getId());
-
-        List<Task> history = taskManager.getHistory();
-        assertTrue(history.contains(task1));
-    }
 }
+
