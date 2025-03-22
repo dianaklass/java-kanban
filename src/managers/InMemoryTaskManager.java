@@ -50,19 +50,15 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
 
-        for (Task existingTask : tasks.values()) {
-            if (checkTaskOverlap(existingTask, task)) {
-                printError("Задача перекрывается по времени с другой задачей");
-                return;
-            }
+        if (!isTaskTimeValid(task)) {
+            printError("Задача перекрывается по времени с другой задачей");
+            return;
         }
-
 
         task.setId(idCounter++);
         tasks.put(task.getId(), task);
         prioritizedTasks.add(task);
 
-        historyManager.add(task);
     }
 
 
@@ -172,8 +168,10 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTask.getEpic() != null) {
             Epic epic = subTask.getEpic();
             epic.addSubTask(subTask);
+            updateEpicStatus(epic);
         }
     }
+
 
     @Override
     public List<SubTask> getAllSubTasks() {
@@ -230,18 +228,28 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpicStatus(Epic epic) {
-        Status newStatus = Status.NEW;
+        boolean hasNew = false;
+        boolean hasDone = true;
+        boolean hasInProgress = false;
+
         for (SubTask subTask : epic.getSubTasks()) {
+            if (subTask.getStatus() == Status.NEW) {
+                hasNew = true;
+            }
             if (subTask.getStatus() == Status.IN_PROGRESS) {
-                newStatus = Status.IN_PROGRESS;
-                break;
-            } else if (subTask.getStatus() == Status.DONE) {
-                if (newStatus == Status.NEW) {
-                    newStatus = Status.DONE;
-                }
+                hasInProgress = true;
+            }
+            if (subTask.getStatus() != Status.DONE) {
+                hasDone = false;
             }
         }
-        epic.setStatus(newStatus);
+        if (hasInProgress) {
+            epic.setStatus(Status.IN_PROGRESS);
+        } else if (hasDone && !hasNew) {
+            epic.setStatus(Status.DONE);
+        } else {
+            epic.setStatus(Status.NEW);
+        }
     }
 
 
