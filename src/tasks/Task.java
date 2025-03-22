@@ -1,4 +1,5 @@
 package tasks;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -11,7 +12,6 @@ public class Task {
     private Duration duration;
     private LocalDateTime startTime;
 
-    // Конструктор
     public Task(String name, String description, Duration duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
@@ -20,29 +20,28 @@ public class Task {
         this.startTime = startTime;
     }
 
-    // Геттеры и сеттеры
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Status getStatus() {
@@ -69,12 +68,8 @@ public class Task {
         this.startTime = startTime;
     }
 
-    public long getDurationInMinutes() {
-        return duration.toMinutes();
-    }
-
     public LocalDateTime getEndTime() {
-        return startTime.plus(duration);
+        return startTime != null ? startTime.plus(duration) : null;
     }
 
     @Override
@@ -95,19 +90,15 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Задача{" +
-                "id=" + id +
-                ", имя='" + name + '\'' +
-                ", описание='" + description + '\'' +
-                ", статус=" + status +
-                '}';
+        return String.format("Task{id=%d, name='%s', description='%s', status=%s, duration=%d min, startTime=%s, endTime=%s}",
+                id, name, description, status, duration.toMinutes(), startTime, getEndTime());
     }
 
-    // Для записи задачи в CSV
     public String toCsvString() {
         return String.format("Task,%d,%s,%s,%s,%d,%s",
-                id, name, description, status, duration.toMinutes(), startTime != null ? startTime.toString() : "");
+                id, name, description, status, duration.toMinutes(),
+                startTime != null ? startTime.toString() : "");
     }
-
 }
+
 

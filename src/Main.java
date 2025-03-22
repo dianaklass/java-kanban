@@ -12,8 +12,11 @@ public class Main {
         Task task1 = new Task("Купить продукты на ужин", "Сделать заказ в Яндекс Еда", Duration.ofMinutes(30), LocalDateTime.now());
         Task task2 = new Task("Поехать на день рождения", "Заказать такси в Яндекс Такси", Duration.ofMinutes(60), LocalDateTime.now().plusMinutes(10));
         Epic epic1 = new Epic("Поехать на море", "Подготовить все к поездке", Duration.ofHours(3), LocalDateTime.now().plusDays(1));
+
+        // Подзадачи с правильным статусом
         SubTask subTask1 = new SubTask("Купить билеты", "Выбрать компанию перелетов", Duration.ofHours(5), LocalDateTime.now().plusWeeks(1), epic1, Status.NEW);
-        SubTask subTask2 = new SubTask("Собрать вещи", "Взять одежду, умывалки", Duration.ofMinutes(120), LocalDateTime.now().plusDays(1).plusMinutes(15), epic1, Status.NEW);
+        SubTask subTask2 = new SubTask("Собрать вещи", "Взять одежду", Duration.ofMinutes(120), LocalDateTime.now().plusDays(1).plusMinutes(15), epic1, Status.NEW);
+
         Epic epic2 = new Epic("Пройти первый модуль", "Закрыть все пять тем", Duration.ofMinutes(90), LocalDateTime.now().plusDays(1).plusMinutes(30));
         SubTask subTask3 = new SubTask("Сдать финальные проекты", "Прочитать теорию", Duration.ofHours(2), LocalDateTime.now().plusWeeks(1).plusMinutes(10), epic2, Status.NEW);
 
@@ -74,3 +77,4 @@ public class Main {
         System.out.println("Подзадачи: " + taskManager.getAllSubTasks());
     }
 }
+

@@ -1,8 +1,10 @@
 package managers;
+
 import tasks.Epic;
 import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
+
 import java.util.List;
 
 public interface TaskManager {
@@ -48,7 +50,6 @@ public interface TaskManager {
 
     void updateEpicStatus(Epic epic);
 
-    // Метод для получения приоритетных задач
     List<Task> getPrioritizedTasks();
 
     default void printError(String message) {

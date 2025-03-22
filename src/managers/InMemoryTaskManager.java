@@ -14,10 +14,33 @@ public class InMemoryTaskManager implements TaskManager {
     private int idCounter = 1;
     private final HistoryManager historyManager;
 
-    private final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())));
+    private final Set<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())));
 
     public InMemoryTaskManager() {
-        this.historyManager = Manager.getDefaultHistory();
+        this.historyManager = new InMemoryHistoryManager();
+    }
+
+    public HistoryManager getHistoryManager() {
+        return historyManager;
+    }
+
+
+    public boolean checkTaskOverlap(Task task1, Task task2) {
+        if (task1.getStartTime().isBefore(task2.getEndTime()) && task1.getEndTime().isAfter(task2.getStartTime())) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    private boolean isTaskTimeValid(Task task) {
+        for (Task existingTask : prioritizedTasks) {
+            if (checkTaskOverlap(task, existingTask)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -26,10 +49,22 @@ public class InMemoryTaskManager implements TaskManager {
             printError("Пустую задачу нельзя добавить");
             return;
         }
+
+        for (Task existingTask : tasks.values()) {
+            if (checkTaskOverlap(existingTask, task)) {
+                printError("Задача перекрывается по времени с другой задачей");
+                return;
+            }
+        }
+
+
         task.setId(idCounter++);
         tasks.put(task.getId(), task);
         prioritizedTasks.add(task);
+
+        historyManager.add(task);
     }
+
 
     @Override
     public List<Task> getAllTasks() {
@@ -38,7 +73,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(int id) {
-        return tasks.get(id);
+        Task task = tasks.get(id);
+        if (task != null) {
+            historyManager.add(task);
+        }
+        return task;
     }
 
     @Override
@@ -66,12 +105,16 @@ public class InMemoryTaskManager implements TaskManager {
             printError("Задачу нельзя обновить, так как она пуста");
             return;
         }
+        if (!isTaskTimeValid(newTask)) {
+            printError("Задача перекрывается по времени с другой задачей");
+            return;
+        }
         tasks.put(newTask.getId(), newTask);
         prioritizedTasks.remove(newTask);
         prioritizedTasks.add(newTask);
     }
 
-    // Методы для работы с эпиками
+
     @Override
     public void addEpic(Epic epic) {
         if (epic == null) {
@@ -112,18 +155,23 @@ public class InMemoryTaskManager implements TaskManager {
         epics.clear();
     }
 
-    // Методы для работы с подзадачами
     @Override
     public void addSubTask(SubTask subTask) {
         if (subTask == null) {
             printError("Пустую подзадачу нельзя добавить");
             return;
         }
+        if (!isTaskTimeValid(subTask)) {
+            printError("Подзадача перекрывается по времени с другой задачей");
+            return;
+        }
         subTask.setId(idCounter++);
         subTasks.put(subTask.getId(), subTask);
         prioritizedTasks.add(subTask);
+
         if (subTask.getEpic() != null) {
-            updateEpicTimeFields(subTask.getEpic());
+            Epic epic = subTask.getEpic();
+            epic.addSubTask(subTask);
         }
     }
 
@@ -134,13 +182,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<SubTask> getSubTaskList(int epicId) {
-        List<SubTask> result = new ArrayList<>();
-        for (SubTask subTask : subTasks.values()) {
-            if (subTask.getEpicId() == epicId) {
-                result.add(subTask);
-            }
+        Epic epic = epics.get(epicId);
+        if (epic != null) {
+            return epic.getSubTasks();
+        } else {
+            printError("Эпик с ID " + epicId + " не найден");
+            return Collections.emptyList();
         }
-        return result;
     }
 
     @Override
@@ -148,6 +196,12 @@ public class InMemoryTaskManager implements TaskManager {
         SubTask subTask = subTasks.remove(id);
         if (subTask != null) {
             prioritizedTasks.remove(subTask);
+            Epic epic = subTask.getEpic();
+            if (epic != null) {
+                epic.removeSubTask(subTask);
+            }
+        } else {
+            printError("Подзадача с ID " + id + " не найдена");
         }
     }
 
@@ -160,17 +214,13 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTaskStatus(SubTask subTask, Status newStatus) {
         if (subTask == null) {
-            printError("Нельзя обновить статус пустой подзадачи");
-            return;
-        }
-        if (!subTasks.containsKey(subTask.getId())) {
-            printError("Подзадача с ID " + subTask.getId() + " не найдена");
+            printError("Подзадача не может быть обновлена, так как она пуста");
             return;
         }
         subTask.setStatus(newStatus);
-        prioritizedTasks.remove(subTask);
-        prioritizedTasks.add(subTask);
-        updateEpicTimeFields(subTask.getEpic());
+        if (subTask.getEpic() != null) {
+            updateEpicStatus(subTask.getEpic());
+        }
     }
 
     @Override
@@ -180,29 +230,26 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpicStatus(Epic epic) {
-        boolean allDone = true;
-        for (SubTask subTask : getSubTaskList(epic.getId())) {
-            if (subTask.getStatus() != Status.DONE) {
-                allDone = false;
+        Status newStatus = Status.NEW;
+        for (SubTask subTask : epic.getSubTasks()) {
+            if (subTask.getStatus() == Status.IN_PROGRESS) {
+                newStatus = Status.IN_PROGRESS;
                 break;
+            } else if (subTask.getStatus() == Status.DONE) {
+                if (newStatus == Status.NEW) {
+                    newStatus = Status.DONE;
+                }
             }
         }
-        if (allDone) {
-            epic.setStatus(Status.DONE);
-        } else {
-            epic.setStatus(Status.IN_PROGRESS);
-        }
-        prioritizedTasks.remove(epic);
-        prioritizedTasks.add(epic);
+        epic.setStatus(newStatus);
     }
 
+
     private void updateEpicTimeFields(Epic epic) {
-        epic.updateEpicData();
-        prioritizedTasks.remove(epic);
-        prioritizedTasks.add(epic);
+
     }
 
     public void printError(String message) {
-        System.out.println(message);
+        System.out.println("Ошибка: " + message);
     }
 }

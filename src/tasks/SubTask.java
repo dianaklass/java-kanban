@@ -5,17 +5,25 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class SubTask extends Task {
-    private Epic epic;
     private int epicId;
+    private Epic epic;
 
     public SubTask(String name, String description, Duration duration, LocalDateTime startTime, Epic epic, Status status) {
         super(name, description, duration, startTime);
-        this.epic = epic;
         this.epicId = epic != null ? epic.getId() : -1;
         this.setStatus(status);
     }
 
-    // Геттер и сеттер для epicId
+    public Epic getEpic() {
+        return epic;
+    }
+
+
+    public void setEpic(Epic epic) {
+        this.epic = epic;
+        this.epicId = epic != null ? epic.getId() : 0; // Обновляем ID эпика
+    }
+
     public int getEpicId() {
         return epicId;
     }
@@ -24,33 +32,24 @@ public class SubTask extends Task {
         this.epicId = epicId;
     }
 
-    // Геттер и сеттер для эпика
-    public void setEpic(Epic epic) {
-        this.epic = epic;
-    }
-
-    public Epic getEpic() {
-        return epic;
+    public void setStatus(Status status) {
+        super.setStatus(status);
+        if (epic != null) {
+            epic.updateEpicData();
+        }
     }
 
     @Override
     public String toString() {
-        return "Подзадача{" +
-                "id=" + getId() +
-                ", имя='" + getName() + '\'' +
-                ", описание='" + getDescription() + '\'' +
-                ", статус=" + getStatus() +
-                ", продолжительность=" + getDuration() +
-                ", время начала=" + getStartTime() +
-                ", время завершения=" + getEndTime() +
-                '}';
+        return String.format("SubTask{id=%d, name='%s', description='%s', status=%s, duration=%d min, startTime=%s, endTime=%s, epicId=%d}",
+                getId(), getName(), getDescription(), getStatus(), getDuration().toMinutes(), getStartTime(), getEndTime(), epicId);
     }
 
     @Override
     public String toCsvString() {
         return String.format("SubTask,%d,%s,%s,%s,%d,%s,%d",
                 getId(), getName(), getDescription(), getStatus(),
-                getDuration().toMinutes(), getStartTime(), getEpicId());
+                getDuration().toMinutes(), getStartTime(), epicId);
     }
 
     @Override
@@ -61,13 +60,14 @@ public class SubTask extends Task {
         return getId() == subTask.getId() &&
                 Objects.equals(getName(), subTask.getName()) &&
                 Objects.equals(getDescription(), subTask.getDescription()) &&
-                Objects.equals(getEpic(), subTask.getEpic()) &&
                 Objects.equals(getDuration(), subTask.getDuration()) &&
-                Objects.equals(getStartTime(), subTask.getStartTime());
+                Objects.equals(getStartTime(), subTask.getStartTime()) &&
+                epicId == subTask.epicId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getName(), getDescription(), getEpic(), getDuration(), getStartTime());
+        return Objects.hash(getId(), getName(), getDescription(), getDuration(), getStartTime(), epicId);
     }
 }
+

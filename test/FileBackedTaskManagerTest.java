@@ -25,7 +25,6 @@ public class FileBackedTaskManagerTest {
 
     @BeforeEach
     public void setup() throws IOException {
-        // Создаем временный файл для тестов
         file = new File("test_tasks.csv");
         if (file.exists()) {
             file.delete();
@@ -36,7 +35,7 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testAddTask() throws IOException {
-        Task task = new Task("Test Task", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task);
 
         Task retrievedTask = taskManager.getTaskById(task.getId());
@@ -46,7 +45,7 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testAddEpic() throws IOException {
-        Epic epic = new Epic("Test Epic", "Epic Description", Duration.ofHours(5), LocalDateTime.now());
+        Epic epic = new Epic("Эпик", "Описание", Duration.ofHours(5), LocalDateTime.now());
         taskManager.addEpic(epic);
 
         Epic retrievedEpic = taskManager.getEpicById(epic.getId());
@@ -56,21 +55,21 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testUpdateTask() throws IOException {
-        Task task = new Task("Test Task", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task);
 
-        task.setName("Updated Task");
+        task.setName("Обновленное задание");
         taskManager.update(task);
 
         Task updatedTask = taskManager.getTaskById(task.getId());
         assertNotNull(updatedTask);
-        assertEquals("Updated Task", updatedTask.getName());
+        assertEquals("Обновленное задание", updatedTask.getName());
     }
 
     @Test
     public void testClearAllTasks() throws IOException {
-        Task task1 = new Task("Test Task 1", "Description", Duration.ofHours(2), LocalDateTime.now());
-        Task task2 = new Task("Test Task 2", "Description", Duration.ofHours(3), LocalDateTime.now());
+        Task task1 = new Task("Задача 1", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        Task task2 = new Task("Задача 2", "Описание", Duration.ofHours(3), LocalDateTime.now());
 
         taskManager.addTask(task1);
         taskManager.addTask(task2);
@@ -82,21 +81,21 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testSaveToFile() throws IOException {
-        Task task = new Task("Test Task", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task);
 
         BufferedReader reader = new BufferedReader(new FileReader(file));
         reader.readLine();
         String line = reader.readLine();
         assertNotNull(line);
-        assertTrue(line.contains("Test Task"));
+        assertTrue(line.contains("Задача"));
         reader.close();
     }
 
     @Test
     public void testLoadFromFile() throws IOException {
         // Сначала добавляем задачи в менеджер
-        Task task1 = new Task("Test Task 1", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task1 = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task1);
         taskManager.save();
 
@@ -109,7 +108,7 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testDeleteTaskById() throws IOException {
-        Task task = new Task("Test Task", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task);
 
         taskManager.clearById(task.getId());
@@ -120,17 +119,15 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testFilePersistence() throws IOException {
-        // Добавляем задачу и сохраняем её
-        Task task = new Task("Persistent Task", "Description", Duration.ofHours(2), LocalDateTime.now());
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
         taskManager.addTask(task);
 
-        // Проверяем, что задача сохранена в файле
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line = reader.readLine(); // Пропускаем заголовок
+        String line = reader.readLine();
         assertNotNull(line);
         boolean foundTask = false;
         while ((line = reader.readLine()) != null) {
-            if (line.contains("Persistent Task")) {
+            if (line.contains("Задача")) {
                 foundTask = true;
                 break;
             }
@@ -141,7 +138,7 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testClearAllEpics() throws IOException {
-        Epic epic = new Epic("Test Epic", "Epic Description", Duration.ofHours(5), LocalDateTime.now());
+        Epic epic = new Epic("Эпик", "Описание", Duration.ofHours(5), LocalDateTime.now());
         taskManager.addEpic(epic);
 
         taskManager.clearAllEpics();
@@ -152,13 +149,13 @@ public class FileBackedTaskManagerTest {
 
     @Test
     public void testCheckTaskOverlap() {
-        Task task1 = new Task("Task 1", "Description", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 10, 0));
-        Task task2 = new Task("Task 2", "Description", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 11, 0));
+        Task task1 = new Task("Задача 1", "Описание", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 10, 0));
+        Task task2 = new Task("Задача 2", "Описание", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 11, 0));
 
         boolean isOverlapping = taskManager.checkTaskOverlap(task1, task2);
         assertTrue(isOverlapping);
 
-        Task task3 = new Task("Task 3", "Description", Duration.ofHours(1), LocalDateTime.of(2025, 3, 20, 13, 0));
+        Task task3 = new Task("Задача 3", "Описание", Duration.ofHours(1), LocalDateTime.of(2025, 3, 20, 13, 0));
         isOverlapping = taskManager.checkTaskOverlap(task1, task3);
         assertFalse(isOverlapping);
     }
