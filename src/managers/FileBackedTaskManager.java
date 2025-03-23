@@ -48,33 +48,51 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
+
     private Task fromString(String line) {
         String[] data = line.split(",");
-        int id = Integer.parseInt(data[1]);
-        String name = data[2];
-        String description = data[3];
-        Status status = Status.valueOf(data[4]);
-        Duration duration = Duration.ofMinutes(Long.parseLong(data[5]));
-        LocalDateTime startTime = data[6].isEmpty() ? null : LocalDateTime.parse(data[6]);
+        if (data.length < 7) {
+            System.out.println("Некорректная строка: " + line);
+            return null;
+        }
 
-        switch (data[0]) {
-            case "Epic":
-                Epic epic = new Epic(name, description, duration, startTime);
-                epic.setId(id);
-                return epic;
-            case "SubTask":
-                int epicId = Integer.parseInt(data[7]);
-                Epic epicForSubTask = findEpicById(epicId);
-                SubTask subTask = new SubTask(name, description, duration, startTime, epicForSubTask, status);
-                subTask.setId(id);
-                return subTask;
-            default:
-                Task task = new Task(name, description, duration, startTime);
-                task.setId(id);
-                task.setStatus(status);
-                return task;
+        try {
+            int id = Integer.parseInt(data[1]);
+            String name = data[2];
+            String description = data[3];
+            Status status = Status.valueOf(data[4]);
+
+            Duration duration = data[5].isEmpty() ? Duration.ZERO : Duration.ofMinutes(Long.parseLong(data[5]));
+
+            LocalDateTime startTime = data[6].isEmpty() ? LocalDateTime.now() : LocalDateTime.parse(data[6]);
+
+            switch (data[0]) {
+                case "Epic":
+                    Epic epic = new Epic(name, description, duration, startTime);
+                    epic.setId(id);
+                    return epic;
+                case "SubTask":
+                    int epicId = Integer.parseInt(data[7]);
+                    Epic epicForSubTask = findEpicById(epicId);
+                    if (epicForSubTask == null) {
+                        System.out.println("Эпик с ID " + epicId + " не найден");
+                        return null;
+                    }
+                    SubTask subTask = new SubTask(name, description, duration, startTime, epicForSubTask, status);
+                    subTask.setId(id);
+                    return subTask;
+                default:
+                    Task task = new Task(name, description, duration, startTime);
+                    task.setId(id);
+                    task.setStatus(status);
+                    return task;
+            }
+        } catch (Exception e) {
+            System.out.println("Ошибка при разборе строки: " + line);
+            return null;
         }
     }
+
 
     private Epic findEpicById(int epicId) {
         for (Epic epic : getAllEpics()) {

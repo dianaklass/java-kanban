@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface TaskManager {
 
-    // Методы для работы с задачами
     void addTask(Task task);
 
     List<Task> getAllTasks();
@@ -22,7 +21,6 @@ public interface TaskManager {
 
     void update(Task newTask);
 
-    // Методы для работы с эпиками
     void addEpic(Epic epic);
 
     List<Epic> getAllEpics();
@@ -33,7 +31,6 @@ public interface TaskManager {
 
     void clearAllEpics();
 
-    // Методы для работы с подзадачами
     void addSubTask(SubTask subTask);
 
     List<SubTask> getAllSubTasks();
@@ -51,6 +48,12 @@ public interface TaskManager {
     void updateEpicStatus(Epic epic);
 
     List<Task> getPrioritizedTasks();
+
+    void clearEpicById(int id);
+
+    List<Task> getTasksByStatus(Status status);
+
+    void clearTaskById(int id);
 
     default void printError(String message) {
         System.out.println("Ошибка: " + message);
