@@ -1,43 +1,162 @@
 import managers.FileBackedTaskManager;
 import tasks.Epic;
-import tasks.Status;
-import tasks.SubTask;
 import tasks.Task;
 
+import java.time.LocalDateTime;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeEach;
+
+
+import java.io.*;
+
+
 public class FileBackedTaskManagerTest {
-    public static void main(String[] args) throws IOException {
-        File tempFile = File.createTempFile("task_manager", ".csv");
-        tempFile.deleteOnExit();
 
-        FileBackedTaskManager manager = new FileBackedTaskManager(tempFile);
+    private FileBackedTaskManager taskManager;
+    private File file;
 
-        Task task1 = new Task("Задание 1", "Описание первого задания");
-        Task task2 = new Task("Задание 2", "Описание второго задания");
+    @BeforeEach
+    public void setup() throws IOException {
+        file = new File("test_tasks.csv");
+        if (file.exists()) {
+            file.delete();
+        }
+        file.createNewFile();
+        taskManager = new FileBackedTaskManager(file);
+    }
 
-        Epic epic1 = new Epic("Эпик 1", "Описание первого эпика");
+    @Test
+    public void testAddTask() throws IOException {
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task);
 
-        manager.addTask(task1);
-        manager.addTask(task2);
-        manager.addEpic(epic1);
+        Task retrievedTask = taskManager.getTaskById(task.getId());
+        assertNotNull(retrievedTask);
+        assertEquals(task.getName(), retrievedTask.getName());
+    }
 
-        SubTask subTask1 = new SubTask("Подзадача 1", "Описание подзадачи 1");
-        subTask1.setEpic(epic1);
-        manager.addSubTask(subTask1);
+    @Test
+    public void testAddEpic() throws IOException {
+        Epic epic = new Epic("Эпик", "Описание", Duration.ofHours(5), LocalDateTime.now());
+        taskManager.addEpic(epic);
 
-        manager.save();
+        Epic retrievedEpic = taskManager.getEpicById(epic.getId());
+        assertNotNull(retrievedEpic);
+        assertEquals(epic.getName(), retrievedEpic.getName());
+    }
 
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
+    @Test
+    public void testUpdateTask() throws IOException {
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task);
 
-        System.out.println("Загруженные задачи:");
-        System.out.println(loadedManager.getAllTasks());
-        System.out.println(loadedManager.getAllEpics());
-        System.out.println(loadedManager.getAllSubTasks());
+        task.setName("Обновленное задание");
+        taskManager.update(task);
 
-        assert loadedManager.getAllTasks().size() == 2 : "Неверное количество задач";
-        assert loadedManager.getAllEpics().size() == 1 : "Неверное количество эпиков";
-        assert loadedManager.getAllSubTasks().size() == 1 : "Неверное количество подзадач";
+        Task updatedTask = taskManager.getTaskById(task.getId());
+        assertNotNull(updatedTask);
+        assertEquals("Обновленное задание", updatedTask.getName());
+    }
+
+    @Test
+    public void testClearAllTasks() throws IOException {
+        Task task1 = new Task("Задача 1", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        Task task2 = new Task("Задача 2", "Описание", Duration.ofHours(3), LocalDateTime.now());
+
+        taskManager.addTask(task1);
+        taskManager.addTask(task2);
+
+        taskManager.clearAllTasks();
+
+        assertTrue(taskManager.getAllTasks().isEmpty());
+    }
+
+    @Test
+    public void testSaveToFile() throws IOException {
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task);
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        reader.readLine();
+        String line = reader.readLine();
+        assertNotNull(line);
+        assertTrue(line.contains("Задача"));
+        reader.close();
+    }
+
+    @Test
+    public void testLoadFromFile() throws IOException {
+        // Сначала добавляем задачи в менеджер
+        Task task1 = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task1);
+        taskManager.save();
+
+        FileBackedTaskManager newTaskManager = new FileBackedTaskManager(file);
+        Task loadedTask = newTaskManager.getTaskById(task1.getId());
+
+        assertNotNull(loadedTask);
+        assertEquals(task1.getName(), loadedTask.getName());
+    }
+
+    @Test
+    public void testDeleteTaskById() throws IOException {
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task);
+
+        taskManager.clearById(task.getId());
+
+        Task deletedTask = taskManager.getTaskById(task.getId());
+        assertNull(deletedTask);
+    }
+
+    @Test
+    public void testFilePersistence() throws IOException {
+        Task task = new Task("Задача", "Описание", Duration.ofHours(2), LocalDateTime.now());
+        taskManager.addTask(task);
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line = reader.readLine();
+        assertNotNull(line);
+        boolean foundTask = false;
+        while ((line = reader.readLine()) != null) {
+            if (line.contains("Задача")) {
+                foundTask = true;
+                break;
+            }
+        }
+        reader.close();
+        assertTrue(foundTask);
+    }
+
+    @Test
+    public void testClearAllEpics() throws IOException {
+        Epic epic = new Epic("Эпик", "Описание", Duration.ofHours(5), LocalDateTime.now());
+        taskManager.addEpic(epic);
+
+        taskManager.clearAllEpics();
+
+        assertTrue(taskManager.getAllEpics().isEmpty());
+    }
+
+
+    @Test
+    public void testCheckTaskOverlap() {
+        Task task1 = new Task("Задача 1", "Описание", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 10, 0));
+        Task task2 = new Task("Задача 2", "Описание", Duration.ofHours(2), LocalDateTime.of(2025, 3, 20, 11, 0));
+
+        boolean isOverlapping = taskManager.checkTaskOverlap(task1, task2);
+        assertTrue(isOverlapping);
+
+        Task task3 = new Task("Задача 3", "Описание", Duration.ofHours(1), LocalDateTime.of(2025, 3, 20, 13, 0));
+        isOverlapping = taskManager.checkTaskOverlap(task1, task3);
+        assertFalse(isOverlapping);
     }
 }

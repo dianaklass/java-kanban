@@ -1,5 +1,7 @@
 package tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -7,35 +9,39 @@ public class Task {
     private String description;
     private int id;
     private Status status;
+    private Duration duration;
+    private LocalDateTime startTime;
 
-    public Task(String name, String description) {
+    public Task(String name, String description, Duration duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Status getStatus() {
@@ -44,6 +50,26 @@ public class Task {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime != null ? startTime.plus(duration) : null;
     }
 
     @Override
@@ -57,7 +83,6 @@ public class Task {
                 status == task.status;
     }
 
-
     @Override
     public int hashCode() {
         return Objects.hash(name, description, id, status);
@@ -65,12 +90,15 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Задача{" +
-                "id=" + id +
-                ", имя='" + name + '\'' +
-                ", описание='" + description + '\'' +
-                ", статус=" + status +
-                '}';
+        return String.format("Task{id=%d, name='%s', description='%s', status=%s, duration=%d min, startTime=%s, endTime=%s}",
+                id, name, description, status, duration.toMinutes(), startTime, getEndTime());
+    }
+
+    public String toCsvString() {
+        return String.format("Task,%d,%s,%s,%s,%d,%s",
+                id, name, description, status, duration.toMinutes(),
+                startTime != null ? startTime.toString() : "");
     }
 }
+
 
