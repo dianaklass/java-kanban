@@ -10,96 +10,90 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private final File file; // Файл для сохранения данных
+    private final File file;
 
-    // Конструктор
     public FileBackedTaskManager(File file) {
         this.file = file;
-        loadFromFile(); // Загружаем данные из файла
+        loadFromFile();
     }
 
-    // Метод для загрузки данных из файла
     private void loadFromFile() {
-        if (!file.exists()) return; // Если файл не существует, ничего не делаем
+        if (!file.exists()) return;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            reader.readLine(); // Пропускаем заголовок
+            reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {
-                Task task = fromString(line); // Преобразуем строку в задачу
+                Task task = fromString(line);
                 if (task instanceof Epic) {
-                    super.addEpic((Epic) task); // Добавляем эпик
+                    super.addEpic((Epic) task);
                 } else if (task instanceof SubTask) {
-                    super.addSubTask((SubTask) task); // Добавляем подзадачу
+                    super.addSubTask((SubTask) task);
                 } else {
-                    super.addTask(task); // Добавляем задачу
+                    super.addTask(task);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace(); // Ошибка при чтении из файла
+            e.printStackTrace();
         }
     }
 
-    // Метод для сохранения данных в файл
     private void saveToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("type,id,name,description,status,duration,startTime,epicId\n"); // Записываем заголовок
-            for (Task task : getAllTasks()) writer.write(task.toCsvString() + "\n"); // Записываем все задачи
-            for (Epic epic : getAllEpics()) writer.write(epic.toCsvString() + "\n"); // Записываем все эпики
-            for (SubTask subTask : getAllSubTasks()) writer.write(subTask.toCsvString() + "\n"); // Записываем все подзадачи
+            writer.write("type,id,name,description,status,duration,startTime,epicId\n");
+            for (Task task : getAllTasks()) writer.write(task.toCsvString() + "\n");
+            for (Epic epic : getAllEpics()) writer.write(epic.toCsvString() + "\n");
+            for (SubTask subTask : getAllSubTasks()) writer.write(subTask.toCsvString() + "\n");
         } catch (IOException e) {
-            e.printStackTrace(); // Ошибка при записи в файл
+            e.printStackTrace();
         }
     }
 
-    // Метод для преобразования строки в задачу
+
     private Task fromString(String line) {
-        String[] data = line.split(","); // Разделяем строку на части
+        String[] data = line.split(",");
         if (data.length < 7) {
-            // Логируем или выбрасываем ошибку
             System.out.println("Некорректная строка: " + line);
-            return null; // Возвращаем null, если строка невалидна
+            return null;
         }
 
         try {
-            int id = Integer.parseInt(data[1]); // Получаем ID
-            String name = data[2]; // Имя задачи
-            String description = data[3]; // Описание задачи
-            Status status = Status.valueOf(data[4]); // Статус задачи
+            int id = Integer.parseInt(data[1]);
+            String name = data[2];
+            String description = data[3];
+            Status status = Status.valueOf(data[4]);
 
-            // Если продолжительность пустая, устанавливаем значение по умолчанию
             Duration duration = data[5].isEmpty() ? Duration.ZERO : Duration.ofMinutes(Long.parseLong(data[5]));
 
-            // Если время начала пустое, устанавливаем значение по умолчанию (например, текущую дату)
             LocalDateTime startTime = data[6].isEmpty() ? LocalDateTime.now() : LocalDateTime.parse(data[6]);
 
             switch (data[0]) {
                 case "Epic":
                     Epic epic = new Epic(name, description, duration, startTime);
                     epic.setId(id);
-                    return epic; // Возвращаем эпик
+                    return epic;
                 case "SubTask":
-                    int epicId = Integer.parseInt(data[7]);  // Важно, чтобы этот индекс существовал
-                    Epic epicForSubTask = findEpicById(epicId); // Находим эпик для подзадачи
+                    int epicId = Integer.parseInt(data[7]);
+                    Epic epicForSubTask = findEpicById(epicId);
                     if (epicForSubTask == null) {
                         System.out.println("Эпик с ID " + epicId + " не найден");
                         return null;
                     }
                     SubTask subTask = new SubTask(name, description, duration, startTime, epicForSubTask, status);
                     subTask.setId(id);
-                    return subTask; // Возвращаем подзадачу
+                    return subTask;
                 default:
                     Task task = new Task(name, description, duration, startTime);
                     task.setId(id);
                     task.setStatus(status);
-                    return task; // Возвращаем обычную задачу
+                    return task;
             }
         } catch (Exception e) {
             System.out.println("Ошибка при разборе строки: " + line);
-            return null; // Ошибка при разборе строки
+            return null;
         }
     }
 
-    // Метод для поиска эпика по ID
+
     private Epic findEpicById(int epicId) {
         for (Epic epic : getAllEpics()) {
             if (epic.getId() == epicId) {
@@ -111,81 +105,81 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void addTask(Task task) {
-        super.addTask(task); // Добавляем задачу
-        saveToFile(); // Сохраняем в файл
+        super.addTask(task);
+        saveToFile();
     }
 
     @Override
     public void clearAllTasks() {
-        super.clearAllTasks(); // Очищаем все задачи
-        saveToFile(); // Сохраняем в файл
+        super.clearAllTasks();
+        saveToFile();
     }
 
     @Override
     public void clearById(int id) {
-        super.clearById(id); // Очищаем задачу по ID
-        saveToFile(); // Сохраняем в файл
+        super.clearById(id);
+        saveToFile();
     }
 
     @Override
     public void update(Task newTask) {
-        super.update(newTask); // Обновляем задачу
-        saveToFile(); // Сохраняем в файл
+        super.update(newTask);
+        saveToFile();
     }
 
     @Override
     public void addEpic(Epic epic) {
-        super.addEpic(epic); // Добавляем эпик
-        saveToFile(); // Сохраняем в файл
+        super.addEpic(epic);
+        saveToFile();
     }
 
     @Override
     public void updateEpic(Epic epic) {
-        super.updateEpic(epic); // Обновляем эпик
-        saveToFile(); // Сохраняем в файл
+        super.updateEpic(epic);
+        saveToFile();
     }
 
     @Override
     public void clearAllEpics() {
-        super.clearAllEpics(); // Очищаем все эпики
-        saveToFile(); // Сохраняем в файл
+        super.clearAllEpics();
+        saveToFile();
     }
 
     @Override
     public void addSubTask(SubTask subTask) {
-        super.addSubTask(subTask); // Добавляем подзадачу
-        saveToFile(); // Сохраняем в файл
+        super.addSubTask(subTask);
+        saveToFile();
     }
 
     @Override
     public void deleteSubTaskById(int id) {
-        super.deleteSubTaskById(id); // Удаляем подзадачу по ID
-        saveToFile(); // Сохраняем в файл
+        super.deleteSubTaskById(id);
+        saveToFile();
     }
 
     @Override
     public void deleteAllSubTasks() {
-        super.deleteAllSubTasks(); // Удаляем все подзадачи
-        saveToFile(); // Сохраняем в файл
+        super.deleteAllSubTasks();
+        saveToFile();
     }
 
     @Override
     public void updateSubTaskStatus(SubTask subTask, Status newStatus) {
-        super.updateSubTaskStatus(subTask, newStatus); // Обновляем статус подзадачи
-        saveToFile(); // Сохраняем в файл
+        super.updateSubTaskStatus(subTask, newStatus);
+        saveToFile();
     }
 
     @Override
     public void updateEpicStatus(Epic epic) {
-        super.updateEpicStatus(epic); // Обновляем статус эпика
-        saveToFile(); // Сохраняем в файл
+        super.updateEpicStatus(epic);
+        saveToFile();
     }
 
     public void save() {
-        saveToFile(); // Сохраняем данные в файл
+        saveToFile();
     }
 
     public static FileBackedTaskManager loadFromFile(File file) {
-        return new FileBackedTaskManager(file); // Загружаем данные из файла
+        return new FileBackedTaskManager(file);
     }
 }

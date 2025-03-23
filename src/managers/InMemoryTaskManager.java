@@ -271,16 +271,17 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(Status.NEW);
         }
     }
+
     @Override
     public void clearEpicById(int id) {
-        Epic epic = epics.remove(id);  // Удаляем эпик по его ID
+        Epic epic = epics.remove(id);
         if (epic != null) {
-            // Удаляем связанные подзадачи, если они есть
+
             for (SubTask subTask : epic.getSubTasks()) {
                 subTasks.remove(subTask.getId());
-                prioritizedTasks.remove(subTask);  // Убираем из приоритетных задач
+                prioritizedTasks.remove(subTask);
             }
-            prioritizedTasks.remove(epic);  // Убираем эпик из приоритетных задач
+            prioritizedTasks.remove(epic);
         } else {
             printError("Эпик с ID " + id + " не найден");
         }
