@@ -33,7 +33,6 @@ public interface TaskManager {
 
     void clearAllEpics();
 
-    // Методы для работы с подзадачами
     void addSubTask(SubTask subTask);
 
     List<SubTask> getAllSubTasks();
@@ -51,13 +50,11 @@ public interface TaskManager {
     void updateEpicStatus(Epic epic);
 
     List<Task> getPrioritizedTasks();
+
     void clearEpicById(int id);
-// В интерфейсе TaskManager добавляем эти методы
 
-    // Метод для получения задач по статусу
     List<Task> getTasksByStatus(Status status);
-
-    // Метод для удаления задачи по ID
+    
     void clearTaskById(int id);
 
     default void printError(String message) {
