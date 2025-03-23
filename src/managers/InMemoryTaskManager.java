@@ -33,6 +33,26 @@ public class InMemoryTaskManager implements TaskManager {
         return false;
     }
 
+    @Override
+    public List<Task> getTasksByStatus(Status status) {
+        List<Task> tasksByStatus = new ArrayList<>();
+        for (Task task : tasks.values()) {
+            if (task.getStatus() == status) {
+                tasksByStatus.add(task);
+            }
+        }
+        return tasksByStatus;
+    }
+
+    @Override
+    public void clearTaskById(int id) {
+        Task task = tasks.remove(id);  // Удаляем задачу по её ID
+        if (task != null) {
+            prioritizedTasks.remove(task);  // Убираем её из приоритетных задач
+        } else {
+            printError("Задача с ID " + id + " не найдена");
+        }
+    }
 
     private boolean isTaskTimeValid(Task task) {
         for (Task existingTask : prioritizedTasks) {
@@ -249,6 +269,20 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(Status.DONE);
         } else {
             epic.setStatus(Status.NEW);
+        }
+    }
+    @Override
+    public void clearEpicById(int id) {
+        Epic epic = epics.remove(id);  // Удаляем эпик по его ID
+        if (epic != null) {
+            // Удаляем связанные подзадачи, если они есть
+            for (SubTask subTask : epic.getSubTasks()) {
+                subTasks.remove(subTask.getId());
+                prioritizedTasks.remove(subTask);  // Убираем из приоритетных задач
+            }
+            prioritizedTasks.remove(epic);  // Убираем эпик из приоритетных задач
+        } else {
+            printError("Эпик с ID " + id + " не найден");
         }
     }
 
